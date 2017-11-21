@@ -1,4 +1,4 @@
-#include "tracklet_em.h"
+#include "tracklet_em_2.h"
 
 //  for 1trk, file called "trk_output_v2.txt" should contain all event data in format:
 //"Event" [2 spaces] # [3 spaces] jet pT [3 spaces] jet eta [3 spaces] jet phi  (for both jets)
@@ -16,7 +16,7 @@
 //Arguments: argv[1]: 1 for 1trk, 2 for tp. argv[2]: number of zbins (default 64).
 int main(int argc, char ** argv){
    //Numbers to specify which events to start and finish on.
-	int eventstart = 1;
+	int eventstart = 0;
 	int eventend = 99999;      //if higher than number of events, will end with last event.
    
    //If second number specified it is number of zbins
@@ -70,37 +70,56 @@ int main(int argc, char ** argv){
 	ofstream traxdat;
 	plotname = "ntracks_" + nz + "z.dat";
 	traxdat.open(plotname.c_str());
+	ofstream disdat;
+	plotname = "distance_" + nz + "z.dat";
+	disdat.open(plotname.c_str());
 	int nevents = 0;
 	getline(in_tracks, data_in, ' ');
         string data;
- //pointer to structure to hold jet MC data for each event.
-        struct mc_data * mcdat = (struct mc_data *)malloc(sizeof(struct mc_data));
+	float distance;
      	while(nevents < eventend){
+ //pointer to structure to hold jet MC data for each event.
+        	struct mc_data * mcdat = (struct mc_data *)malloc(10*sizeof(struct mc_data));
 		int ntracks = 0;
-		if(data_in == "Event"){
-			++nevents;
-			for(int cc=0; cc<4; ++cc){
+		int ntp = 0;
+		string evnum = "0";
+		while(data_in == "Event"){
+			for(int cc=0; cc<2; ++cc){
+				getline(in_tracks, data_in, ' ');
+			}
+			if(data_in != evnum){
+				++nevents;
+				ntp = 0;
+			}
+			evnum = data_in;
+			for(int cc=0; cc<2; ++cc){
 				getline(in_tracks, data_in, ' ');
 			}
 			getline(in_tracks, data, ' ');
-                        mcdat->ogpt = atof(data.c_str());
+                        mcdat[ntp].ogpt = atof(data.c_str());
 			for(int cc=0; cc<3; ++cc){
 				getline(in_tracks, data, ' ');
 			}
-                        mcdat->ogeta = atof(data.c_str());
+                        mcdat[ntp].ogeta = atof(data.c_str());
 			getline(in_tracks, data);
                         data = data.substr(0, data.length()-1);
-                        mcdat->ogphi = atof(data.c_str());
-		      //Next line gives no important information.
-			getline(in_tracks, data_in);
-			if(nevents < eventstart){
-				ntracks = 0;
-				continue;
-			}
-	   		out_clusts << "\n****EVENT " << nevents << " ****" << endl;
-	   		out_clusts << "pT: " << mcdat->ogpt << " eta: " << mcdat->ogeta << " phi: " << mcdat->ogphi << endl;
+                        mcdat[ntp].ogphi = atof(data.c_str());
+			ntp++;
+		      //Now get next particle (or first track data)
 			getline(in_tracks, data_in, ' ');
 		}
+		if(nevents < eventstart){
+			ntracks = 0;
+			while(data_in != "Event"){
+				getline(in_tracks, data_in, ' ');
+			}
+			continue;
+		}
+	   	out_clusts << "\n****EVENT " << nevents << " *** (" << ntp << " tracking particles)" << endl;
+		for(int i = 0; i < ntp; ++i){
+	   		out_clusts << i << " pT: " << mcdat[i].ogpt << " eta: " << mcdat[i].ogeta << " phi: " << mcdat[i].ogphi << endl;
+		}
+		//getline(in_tracks, data_in, ' ');
 		if(in_tracks.eof()){
 			cout << "End of file reached!" << endl;
 			break;
@@ -137,30 +156,44 @@ int main(int argc, char ** argv){
              } //data_in isn't "Event"
 
           //find clusters for tracks data.
+             out_clusts << ntracks << " tracks total" << endl;
              mcdat->ntracks = ntracks;
              struct maxzbin * mzb = L2_cluster(tracks, mcdat, nzbins);
              if(mzb == NULL){
                 continue;
              }
          //output to plot data files.
+             out_clusts << "ZBIN: " << mzb->znum << endl; 
              for(int k = 0; k < mzb->nclust; ++k){
-               //if jet and cluster phi and eta are opposite sign, cluster belongs to opposite jet.
-		if (mzb->phimc*mzb->clusters[k].phi<0){
-			if(mzb->phimc<0)
-				plot1dat << mzb->phimc+M_PI << "\t" << mzb->clusters[k].phi << endl;
-			else
-				plot1dat << mzb->phimc-M_PI << "\t" << mzb->clusters[k].phi << endl;
-		}
-		else
-	     		plot1dat << mzb->phimc << "\t" << mzb->clusters[k].phi << endl;
-		if (mzb->etamc*mzb->clusters[k].eta<0)
-			plot2dat << mzb->etamc*-1 << "\t" << mzb->clusters[k].eta << endl;
-		else
-	        	plot2dat << mzb->etamc << "\t" << mzb->clusters[k].eta << endl;
-		ptdat << mzb->pTmc << "\t" << mzb->clusters[k].pTtot << endl;
-		traxdat << ntracks << "\t" <<  mzb->clusters[k].numtracks << endl;
-	     }
+		bool matched = false;
+         	for(int b = 0; b < ntp; b++){
+               //Match clusters with correct input jet (and ignore the garbage clusters.)
+               // Only accept cluster if it is within .3 (in eta-phi space) of one of the jets.
+                
+		   distance = sqrt(pow(mzb->mcd[b].ogphi - mzb->clusters[k].phi, 2) + pow(mzb->mcd[b].ogeta - mzb->clusters[k].eta, 2));
+		   if (distance < 0.3){
+	     		plot1dat << mzb->mcd[b].ogphi << "\t" << mzb->clusters[k].phi << endl;
+			plot2dat << mzb->mcd[b].ogeta << "\t" << mzb->clusters[k].eta << endl;
+			ptdat << mzb->mcd[b].ogpt << "\t" << mzb->clusters[k].pTtot << endl;
+			traxdat << ntracks << "\t" <<  mzb->clusters[k].numtracks << endl;
+			disdat << mzb->mcd[b].ogpt << "\t" << distance << endl;
+			out_clusts << "   CLUSTER " << k << "(" << mzb->clusters[k].numtracks << " tracks)\t MC data \t Matched cluster data" << endl;
+			out_clusts << "   phi \t\t\t" << mzb->mcd[b].ogphi << "\t\t" << mzb->clusters[k].phi << endl;
+			out_clusts << "   eta \t\t\t" << mzb->mcd[b].ogeta << "\t\t" << mzb->clusters[k].eta << endl;
+			out_clusts << "   pT \t\t\t" << mzb->mcd[b].ogpt << "\t\t" << mzb->clusters[k].pTtot << endl;
+			matched = true;
+			break;
+	     	   } 
+                }//for each input jet
+	        if(matched)
+			continue;
+		out_clusts << "  (Unmatched) CLUSTER " << k << "(" << mzb->clusters[k].numtracks << " tracks)" << endl;
+		out_clusts << "   phi \t\t\t" << "\t\t" << mzb->clusters[k].phi << endl;
+		out_clusts << "   eta \t\t\t" << mzb->clusters[k].eta << endl;
+		out_clusts << "   pT \t\t\t"  << mzb->clusters[k].pTtot << endl;
+	    } //for each cluster
 		
+	    free(mzb->mcd);
 	    free(mzb->clusters);
 	    free(mzb);
 	     
@@ -173,6 +206,7 @@ int main(int argc, char ** argv){
 	plot2dat.close();
 	ptdat.close();
 	traxdat.close();
-	cout << "4 new data files created." <<endl;
+	disdat.close();
+	cout << "5 new data files created." <<endl;
 	return 0;
 } //end main
