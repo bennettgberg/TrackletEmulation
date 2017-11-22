@@ -58,12 +58,12 @@ int main(int argc, char ** argv){
              outname = "em_out_tp_" + nz + "z.txt";
         }
 	out_clusts.open(outname.c_str());
-	ofstream plot1dat;
-	string plotname = "plot1dat_" + nz + "z.dat";
-	plot1dat.open(plotname.c_str());
-	ofstream plot2dat;
-	plotname = "plot2dat_" + nz + "z.dat";
-	plot2dat.open(plotname.c_str());
+	ofstream phidat;
+	string plotname = "phidat_" + nz + "z.dat";
+	phidat.open(plotname.c_str());
+	ofstream etadat;
+	plotname = "etadat_" + nz + "z.dat";
+	etadat.open(plotname.c_str());
 	ofstream ptdat;
 	plotname = "ptplot_" + nz + "z.dat";
 	ptdat.open(plotname.c_str());
@@ -77,7 +77,7 @@ int main(int argc, char ** argv){
 	getline(in_tracks, data_in, ' ');
         string data;
 	float distance;
-     	while(nevents < eventend){
+     	while(nevents <= eventend){
  //pointer to structure to hold jet MC data for each event.
         	struct mc_data * mcdat = (struct mc_data *)malloc(10*sizeof(struct mc_data));
 		int ntracks = 0;
@@ -148,7 +148,6 @@ int main(int argc, char ** argv){
 			}    
 		//Read next line of data
 			if(in_tracks.eof()){
-				cout << "End of file reached!" << endl;
 				break;
 			}
 			getline(in_tracks, data_in, ' ');
@@ -172,8 +171,8 @@ int main(int argc, char ** argv){
                 
 		   distance = sqrt(pow(mzb->mcd[b].ogphi - mzb->clusters[k].phi, 2) + pow(mzb->mcd[b].ogeta - mzb->clusters[k].eta, 2));
 		   if (distance < 0.3){
-	     		plot1dat << mzb->mcd[b].ogphi << "\t" << mzb->clusters[k].phi << endl;
-			plot2dat << mzb->mcd[b].ogeta << "\t" << mzb->clusters[k].eta << endl;
+	     		phidat << mzb->mcd[b].ogphi << "\t" << mzb->clusters[k].phi << endl;
+			etadat << mzb->mcd[b].ogeta << "\t" << mzb->clusters[k].eta << endl;
 			ptdat << mzb->mcd[b].ogpt << "\t" << mzb->clusters[k].pTtot << endl;
 			traxdat << ntracks << "\t" <<  mzb->clusters[k].numtracks << endl;
 			disdat << mzb->mcd[b].ogpt << "\t" << distance << endl;
@@ -197,13 +196,13 @@ int main(int argc, char ** argv){
 	    free(mzb->clusters);
 	    free(mzb);
 	     
-	} //while nevents < eventend
+	} //while nevents <= eventend
         out_clusts << "****" << nevents << " events****" << endl;
 	free(tracks);
         in_tracks.close();
 	out_clusts.close();
-	plot1dat.close();
-	plot2dat.close();
+	phidat.close();
+	etadat.close();
 	ptdat.close();
 	traxdat.close();
 	disdat.close();
