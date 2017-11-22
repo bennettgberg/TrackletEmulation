@@ -67,9 +67,12 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 		} //for each track: k loop
 
     //Uncomment to print out pT of each eta and phi bin.
-	//	for(int i = 0; i < nphibins; ++i)
-	//		for(int j = 0; j < netabins; ++j)
-	//			cout << "epbins[" << i << "][" << j << "] pTtot: " << epbins[i][j].pTtot << endl;
+//		for(int i = 0; i < netabins; ++i)
+//			for(int j = 0; j < nphibins; ++j)
+//				if(epbins[i][j].pTtot != 0) {
+//				        cout << "zmin " << zmin << " zmax " << zmax << endl;
+//					cout << "zbin " << zbin << " epbins[" << i << "][" << j << "] pTtot: " << epbins[i][j].pTtot << endl;
+//				}
 	
 
 	  //First do clustering in Layer 1: maximum possible nclust for each eta slice would be a cluster in every other phibin.
@@ -94,6 +97,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 		float E1 =0;
 		float E0 =0;
 		float E2 =0;
+		int trx1, trx2;
 		int used1, used2, used3, used4;
 
 			//Find eta-phibin with highest pT.
@@ -113,6 +117,8 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 			E0 = hipT;
 			E1 = 0;
 			E2 = 0;
+			trx1 = 0;
+			trx2 = 0;
 			L2cluster[nclust] = L1clusters[etabin][imax];
 			L1clusters[etabin][imax].used = true;
 		//Add pT of neighbors.
@@ -126,6 +132,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 					}
 					if(fabs(L1clusters[etabin+1][index1].phi - L1clusters[etabin][imax].phi) <= phistep){
 						E1 += L1clusters[etabin+1][index1].pTtot;
+						trx1 += L1clusters[etabin+1][index1].numtracks;
 						if(used1 < 0)
 							used1 = index1;
 						else
@@ -134,7 +141,8 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 		
 				} //for each cluster in above etabin
 				if(E1 < E0){
-					L2cluster[nclust].pTtot += E1;
+					L2cluster[nclust].pTtot += E1;   
+					L2cluster[nclust].numtracks += trx1;
 					if(used1 >= 0)
 						L1clusters[etabin+1][used1].used = true;
 					if(used2 >= 0)
@@ -152,6 +160,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 					}
 						if(fabs(L1clusters[etabin+2][index1].phi - L1clusters[etabin][imax].phi) <= phistep){
 							E2 += L1clusters[etabin+2][index1].pTtot;
+							trx2 += L1clusters[etabin+2][index1].numtracks;
 							if(used3 < 0)
 								used3 = index1;
 							else
@@ -161,6 +170,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 					}
 					if(E2 < E1){
 						L2cluster[nclust].pTtot += E1 + E2;
+						L2cluster[nclust].numtracks += trx1 + trx2;
 						L2cluster[nclust].eta = L1clusters[etabin+1][used1].eta;	
 						if(used1 >= 0)
 							L1clusters[etabin+1][used1].used = true;
@@ -176,6 +186,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 				}
 				else{
 					L2cluster[nclust].pTtot += E1;
+					L2cluster[nclust].numtracks += trx1;
 					L2cluster[nclust].eta = L1clusters[etabin+1][used1].eta;
 					if(used1 >= 0)
 						L1clusters[etabin+1][used1].used = true;
@@ -219,9 +230,5 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 		zmin = zmin + zstep;
 		zmax = zmax + zstep;
 	     } //for each zbin
-/*	for(int k = 0; k < ntracks; ++k)
-		cout << "track " << k << " bincount: " << tracks[k].bincount << endl;
-	cout << endl;
-  */       
        return mzb;
 }
