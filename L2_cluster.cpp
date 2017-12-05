@@ -1,7 +1,7 @@
 #include "tracklet_em_2.h"
 
 //input array of track_data, output zbin of maximum ht.
-struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, int nzbins){
+maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins){
     //returns NULL if there are no tracks for this event.
         int ntracks = mcd->ntracks;
         if(ntracks == 0){
@@ -12,9 +12,9 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 	float zmin = -1.0*maxz;
 	float zmax = zmin + 2*zstep;
 	//Create grid of phibins! 
-	struct etaphibin ** epbins = (struct etaphibin **)malloc(netabins * sizeof(struct etaphibin *));
+	etaphibin ** epbins = (etaphibin **)malloc(netabins * sizeof(etaphibin *));
 	for(int i = 0; i < netabins; ++i){
-		epbins[i] = (struct etaphibin *)malloc(nphibins * sizeof(struct etaphibin));
+		epbins[i] = (etaphibin *)malloc(nphibins * sizeof(etaphibin));
 	}
 	float phi = -1.0 * M_PI;
 	float eta;
@@ -38,7 +38,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 	mzb->etamc = mcd->ogeta;          
 	mzb->pTmc = mcd->ogpt;*/
 	mzb->mcd = mcd;
-        mzb->clusters = (struct etaphibin*)malloc(sizeof(etaphibin));
+        mzb->clusters = (etaphibin*)malloc(sizeof(etaphibin));
 	 //Last zbin won't be used (goes beyond maximum z)
 	for(int zbin = 0; zbin < nzbins-1; ++zbin){
 	
@@ -76,7 +76,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 	
 
 	  //First do clustering in Layer 1: maximum possible nclust for each eta slice would be a cluster in every other phibin.
-		struct etaphibin ** L1clusters = (struct etaphibin**)malloc(netabins*sizeof(struct etaphibin*));
+		etaphibin ** L1clusters = (etaphibin**)malloc(netabins*sizeof(etaphibin*));
                 for(int etaslice = 0; etaslice < netabins; ++etaslice){
 			L1clusters[etaslice] = L1_cluster(epbins[etaslice]);
 			for(int ind = 0; L1clusters[etaslice][ind].pTtot != 0; ++ind){
@@ -85,7 +85,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 		}
 
 	//Create clusters array to hold output cluster data for Layer2; can't have more clusters than tracks.
-		struct etaphibin * L2cluster = (struct etaphibin *)malloc(ntracks * sizeof(struct etaphibin));
+		etaphibin * L2cluster = (etaphibin *)malloc(ntracks * sizeof(etaphibin));
 
 	//Find eta-phibin with maxpT, make center of cluster, add neighbors if not already used.
 		float hipT = 0;
@@ -216,7 +216,7 @@ struct maxzbin * L2_cluster(struct track_data * tracks, struct mc_data * mcd, in
 			mzb->znum = zbin;
                       //reinitialize clusters array.
                         free(mzb->clusters);
-			mzb->clusters = (struct etaphibin *)malloc(nclust*sizeof(struct etaphibin));
+			mzb->clusters = (etaphibin *)malloc(nclust*sizeof(etaphibin));
 			mzb->nclust = nclust;
 			for(int k = 0; k < nclust; ++k){
 				mzb->clusters[k].phi = L2cluster[k].phi;                               

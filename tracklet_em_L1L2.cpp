@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
             exit(0);
         }
 
-	struct track_data * tracks = (struct track_data *)malloc(numtracks * sizeof(struct track_data));
+	track_data * tracks = (track_data *)malloc(numtracks * sizeof(track_data));
 	string data_in;
   //Open input file and all output files.
 	ifstream in_tracks;
@@ -79,7 +79,7 @@ int main(int argc, char ** argv){
 	float distance;
      	while(nevents <= eventend){
  //pointer to structure to hold jet MC data for each event.
-        	struct mc_data * mcdat = (struct mc_data *)malloc(10*sizeof(struct mc_data));
+        	mc_data * mcdat = (mc_data *)malloc(10*sizeof(mc_data));
 		int ntracks = 0;
 		int ntp = 0;
 		string evnum = "0";
@@ -157,7 +157,7 @@ int main(int argc, char ** argv){
           //find clusters for tracks data.
              out_clusts << ntracks << " tracks total" << endl;
              mcdat->ntracks = ntracks;
-             struct maxzbin * mzb = L2_cluster(tracks, mcdat, nzbins);
+             maxzbin * mzb = L2_cluster(tracks, mcdat, nzbins);
              if(mzb == NULL){
                 continue;
              }
