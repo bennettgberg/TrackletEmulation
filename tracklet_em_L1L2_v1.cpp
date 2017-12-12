@@ -73,6 +73,9 @@ int main(int argc, char ** argv){
 	ofstream disdat;
 	plotname = "distance_" + nz + "z.dat";
 	disdat.open(plotname.c_str());
+	ofstream zplot;
+	plotname = "zplot_" + nz + "z.dat";
+	zplot.open(plotname.c_str());
 	int nevents = 0;
 	getline(in_tracks, data_in, ' ');
         string data;
@@ -82,6 +85,7 @@ int main(int argc, char ** argv){
         	mc_data * mcdat = (mc_data *)malloc(10*sizeof(mc_data));
 		int ntracks = 0;
 		int ntp = 0;
+		bool use_event = true;
 		string evnum = "0";
 		while(data_in == "Event"){
 			for(int cc=0; cc<2; ++cc){
@@ -104,6 +108,7 @@ int main(int argc, char ** argv){
 			getline(in_tracks, data);
                         data = data.substr(0, data.length()-1);
                         mcdat[ntp].ogphi = atof(data.c_str());
+			mcdat[ntp].ntracks = 0;                //start at 0, find total later.
 			ntp++;
 		      //Now get next particle (or first track data)
 			getline(in_tracks, data_in, ' ');
@@ -146,18 +151,40 @@ int main(int argc, char ** argv){
 			if(tracks[ntracks].pT >= 2.0 && fabs(tracks[ntracks].eta) < 2.4 && fabs(tracks[ntracks].z) < 15.0){
 				ntracks++;
 			}    
+			else {
+				use_event = false;
+			}
 		//Read next line of data
 			if(in_tracks.eof()){
 				break;
 			}
 			getline(in_tracks, data_in, ' ');
 
-             } //data_in isn't "Event"
+                } //data_in isn't "Event"
+		if(!use_event){
+			out_clusts << "EVENT DISCARDED (DATA OUT OF RANGE)" << endl;
+			continue;
+		}
+
+		//do matching for input tracks to tracking particles
+		int bbb = 0;
+		for(int b = 0; b < ntracks; b++){
+			float mindist = 15;
+	     		for(int k = 0; k < ntp; ++k){
+		   		distance = sqrt(pow(mcdat[k].ogphi - tracks[b].phi, 2) + pow(mcdat[k].ogeta - tracks[b].eta, 2));
+				if(distance < mindist){
+					bbb = k;
+					mindist = distance;
+				}
+			}//for each cluster in the zbin
+			mcdat[bbb].ntracks++;
+		}//for each track
+
 
           //find clusters for tracks data.
              out_clusts << ntracks << " tracks total" << endl;
-             mcdat->ntracks = ntracks;
-             maxzbin * mzb = L2_cluster(tracks, mcdat, nzbins);
+	     cout << "Event " << nevents << ": " << ntp << " tracking particles, " << ntracks << " tracks " << endl;
+             maxzbin * mzb = L2_cluster(tracks, mcdat, nzbins, ntracks);
              if(mzb == NULL){
                 continue;
              }
@@ -176,10 +203,10 @@ int main(int argc, char ** argv){
 			ptdat << mzb->mcd[b].ogpt << "\t" << mzb->clusters[k].pTtot << endl;
 			traxdat << ntracks << "\t" <<  mzb->clusters[k].numtracks << endl;
 			disdat << mzb->mcd[b].ogpt << "\t" << distance << endl;
-			out_clusts << "   CLUSTER " << k << "(" << mzb->clusters[k].numtracks << " tracks)\t MC data \t Matched cluster data" << endl;
-			out_clusts << "   phi \t\t\t" << mzb->mcd[b].ogphi << "\t\t" << mzb->clusters[k].phi << endl;
-			out_clusts << "   eta \t\t\t" << mzb->mcd[b].ogeta << "\t\t" << mzb->clusters[k].eta << endl;
-			out_clusts << "   pT \t\t\t" << mzb->mcd[b].ogpt << "\t\t" << mzb->clusters[k].pTtot << endl;
+			out_clusts << "(match dist=" << distance <<") CLUSTER " << k << "(" << mzb->clusters[k].numtracks << " tracks)\t MC data \t Matched cluster data" << endl;
+			out_clusts << "   phi \t\t\t\t\t\t" << mzb->mcd[b].ogphi << "\t\t" << mzb->clusters[k].phi << endl;
+			out_clusts << "   eta \t\t\t\t\t\t" << mzb->mcd[b].ogeta << "\t\t" << mzb->clusters[k].eta << endl;
+			out_clusts << "   pT \t\t\t\t\t\t" << mzb->mcd[b].ogpt << "\t\t" << mzb->clusters[k].pTtot << endl;
 			matched = true;
 			break;
 	     	   } 
@@ -187,18 +214,43 @@ int main(int argc, char ** argv){
 	        if(matched)
 			continue;
 		out_clusts << "  (Unmatched) CLUSTER " << k << "(" << mzb->clusters[k].numtracks << " tracks)" << endl;
-		out_clusts << "   phi \t\t\t" << "\t\t" << mzb->clusters[k].phi << endl;
-		out_clusts << "   eta \t\t\t" << mzb->clusters[k].eta << endl;
-		out_clusts << "   pT \t\t\t"  << mzb->clusters[k].pTtot << endl;
-	    } //for each cluster
+		out_clusts << "   phi \t\t\t\t\t\t\t\t" << mzb->clusters[k].phi << endl;
+		out_clusts << "   eta \t\t\t\t\t\t\t\t" << mzb->clusters[k].eta << endl;
+		out_clusts << "   pT \t\t\t\t\t\t\t\t"  << mzb->clusters[k].pTtot << endl;
+	     } //for each cluster
+	    
 		
-	    free(mzb->mcd);
-	    free(mzb->clusters);
-	    free(mzb);
-	     
+	     for(int b = 0; b < ntp; b++){
+	     	float mindist = 15;
+		etaphibin match = mzb->clusters[0];
+		for(int zb = 0; zb < nzbins-1; zb++){
+			if(&all_zbins[zb] == NULL){
+				continue;
+			}
+			for(int k = 0; k < all_zbins[zb].nclust; ++k){
+		   		distance = sqrt(pow(mcdat[b].ogphi - all_zbins[zb].clusters[k].phi, 2) + pow(mcdat[b].ogeta - all_zbins[zb].clusters[k].eta, 2));
+				if(distance < mindist){
+					mindist = distance;
+					match = all_zbins[zb].clusters[k];
+				}
+				
+			}//for each cluster in the zbin
+		}//for each zbin
+		//print data to output files ***********************************	
+		zplot << mcdat[b].ntracks << "\t" << match.numtracks << "\t" << mcdat[b].ogpt << "\t" << match.pTtot << endl;
+	     }
+	
+	for(int i = 0; i < nzbins-1; i++){	
+	  if(&all_zbins[i] == NULL || &all_zbins[i].mcd == NULL) continue;
+	    free(all_zbins[i].clusters);
+	}	  
+   	free(all_zbins);
+	free(mcdat);
+
 	} //while nevents <= eventend
         out_clusts << "****" << nevents << " events****" << endl;
 	free(tracks);
+	zplot.close();
         in_tracks.close();
 	out_clusts.close();
 	phidat.close();
