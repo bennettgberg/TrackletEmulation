@@ -4,7 +4,7 @@ etaphibin * L1_cluster(etaphibin * etaslice){
 
 		etaphibin * clusters = (etaphibin *)malloc(nphibins/2 * sizeof(etaphibin));
 	//Find eta-phibin with maxpT, make center of cluster, add neighbors if not already used.
-		int hipT;
+		float hipT;
 		int pmax;
 		int nclust = 0;
 
