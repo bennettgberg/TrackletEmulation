@@ -57,7 +57,7 @@ const float etastep = 2.0 * maxeta / netabins;
 //Any tracks with pT > 200 GeV should be capped at 200
 const float pTmax = 200.0;
 //Upper bound on number of tracks per event.
-const int numtracks = 50;
+const int numtracks = 500;
 const int nphibins = 32;       //*******************Changed from 28***********************
 //phistep is the width of a phibin.
 const float phistep = 2*M_PI / nphibins;
