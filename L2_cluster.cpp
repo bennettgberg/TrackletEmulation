@@ -130,7 +130,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins){
 					if(L1clusters[etabin+1][index1].used){
 						continue;
 					}
-					if(fabs(L1clusters[etabin+1][index1].phi - L1clusters[etabin][imax].phi) <= phistep){
+					if(fabs(L1clusters[etabin+1][index1].phi - L1clusters[etabin][imax].phi) <= 1.5*phistep){
 						E1 += L1clusters[etabin+1][index1].pTtot;
 						trx1 += L1clusters[etabin+1][index1].numtracks;
 						if(used1 < 0)
@@ -158,7 +158,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins){
 						if(L1clusters[etabin+2][index1].used){
 							continue;
 					}
-						if(fabs(L1clusters[etabin+2][index1].phi - L1clusters[etabin][imax].phi) <= phistep){
+						if(fabs(L1clusters[etabin+2][index1].phi - L1clusters[etabin][imax].phi) <= 1.5*phistep){
 							E2 += L1clusters[etabin+2][index1].pTtot;
 							trx2 += L1clusters[etabin+2][index1].numtracks;
 							if(used3 < 0)
