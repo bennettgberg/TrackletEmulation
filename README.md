@@ -5,3 +5,5 @@ L1_cluster does phi-clustering in each etabin, and L2_cluster stitches everythin
 11/21/2017: updated to use an algorithm closer to the firmware algorithm. Also some bug fixes.
 
 11/22/2017: fixed bug with counting number of tracks
+
+1/16/2018: updated L2_cluster algorithm to include jet-merging at end, some minor bug fixes
