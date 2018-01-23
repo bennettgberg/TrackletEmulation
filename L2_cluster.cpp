@@ -193,7 +193,11 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 					++nclust;
 					continue;
 				}
-			}//Not last etabin
+			}//Not last etabin(23)
+			else { //if it is etabin 23
+				L1clusters[etabin][imax].used = true;
+				++nclust;
+			}
 		    }//while hipT not 0
 		}//for each etabin
 	
