@@ -31,6 +31,10 @@ int main(int argc, char ** argv){
 		cout << "Error: too many arguments" << endl;
 		exit(0);
 	}
+	else if(argc < 2){
+		cout << "Error: please specify '1' for 1trk or '2' for tp." << endl;
+		exit(0);
+	}
     //Name of input file (1st argument: 1 is 1trk, 2 is tp).	
 	string filename;
         if(atoi(argv[1]) == 1){
@@ -155,10 +159,10 @@ int main(int argc, char ** argv){
 				use_event = false;
 			}
 		//Read next line of data
+			getline(in_tracks, data_in, ' ');
 			if(in_tracks.eof()){
 				break;
 			}
-			getline(in_tracks, data_in, ' ');
 
                 } //data_in isn't "Event"
 		if(!use_event){
@@ -183,7 +187,7 @@ int main(int argc, char ** argv){
 
           //find clusters for tracks data.
              out_clusts << ntracks << " tracks total" << endl;
-	     cout << "Event " << nevents << ": " << ntp << " tracking particles, " << ntracks << " tracks " << endl;
+	//     cout << "Event " << nevents << ": " << ntp << " tracking particles, " << ntracks << " tracks " << endl;
              maxzbin * mzb = L2_cluster(tracks, mcdat, nzbins, ntracks);
              if(mzb == NULL){
                 continue;

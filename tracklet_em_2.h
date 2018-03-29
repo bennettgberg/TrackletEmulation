@@ -58,7 +58,7 @@ const float etastep = 2.0 * maxeta / netabins;
 const float pTmax = 200.0;
 //Upper bound on number of tracks per event.
 const int numtracks = 500;
-const int nphibins = 32;       //*******************Changed from 28***********************
+const int nphibins = 27;       //*******************Changed from 28***********************
 //phistep is the width of a phibin.
 const float phistep = 2*M_PI / nphibins;
 //function to find all clusters, find zbin with max ht. In file find_clusters.cpp
