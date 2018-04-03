@@ -128,182 +128,88 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 			trx2 = 0;
 			used1 = -1;
 			used2 = -1;
-		    //now find pT of phibin 0, store in E2.
+		    //now find pT of phibin 0, store in E1.
 			for(int im = 0; L1clusters[0][im].pTtot != 0; ++im){
 				if(L1clusters[0][im].used == true) continue;
 				if(fabs(L1clusters[0][im].eta - L1clusters[0][imax].eta) < 1.5*etastep){
-					E2 += L1clusters[0][im].pTtot;
-					trx2 += L1clusters[0][im].numtracks;
+					E1 += L1clusters[0][im].pTtot;
+					trx1 += L1clusters[0][im].numtracks;
 					if(used1 >= 0) used2 = im; else used1 = im;
 				}
 			}				
-		    //find pT of phibin 25, store in E1.
-			for(int im = 0; L1clusters[nphibins-2][im].pTtot != 0; ++im){
-				if(L1clusters[nphibins-2][im].used == true) continue;
-				if(fabs(L1clusters[nphibins-2][im].eta - L1clusters[nphibins-2][imax].eta) < 1.5*etastep){
-					E1 += L1clusters[nphibins-2][im].pTtot;
-				}
-			}		
 			pre_seen[imax] = true;
-		   //if last > phibin 0 and 2-last <= last, then phibin 0 belongs to last's cluster (save for end). 
-			if(E0 >= E2 && E1 <= E0) { //last > phibin 0 and 2-last <= last, so phibin 0 not center of a cluster (yet)
-				continue;
-			}
-	//		last_used[imax] = true;
-		//evidently we have a cluster centered at phibin 0.
-			L2cluster[nclust] = L1clusters[nphibins-1][imax];  //**************************************DO WE HAVE TO MAKE COPY?????????????***********
-			L2cluster[nclust].phi = L1clusters[0][0].phi;    //set phi of cluster to where it should be--phibin 0.
-			L2cluster[nclust].pTtot += E2;
-			L2cluster[nclust].numtracks += trx2;
-	//		last_used[imax] = true;
-			if(used1 >= 0) { 
-				L1clusters[0][used1].used = true;
-				first_used[used1] = true;
-			}
-			if(used2 >= 0) {
-				L1clusters[0][used2].used = true;
-				first_used[used2] = true;
-			}
-		//does last belong to it? If not, subtract it from the cluster, mark unused again.
-		// E2 is for phibin 0, E1 is for phibin 25.
-			if(E2 < E1) {
-				L2cluster[nclust].pTtot -= E0;
-				L2cluster[nclust].numtracks -= L1clusters[nphibins-1][imax].numtracks;
-			}
-			else {
-				L1clusters[nphibins-1][imax].used = true;
-			}
-		//get pT of second phibin	
-			E1 = 0;   //E1 will be for phibin 1 now.
-			trx1 = 0;
-			used1 = -1; 
-			used2 = -1;
-			for(int im = 0; L1clusters[1][im].pTtot != 0; ++im){
-				if(L1clusters[1][im].used == true) continue;
-				if(fabs(L1clusters[1][im].eta - L1clusters[1][imax].eta) < 1.5*etastep){
-					E1 += L1clusters[1][im].pTtot;
-					trx2 += L1clusters[1][im].numtracks;
-					if(used1 >= 0) used2 = im; else used1 = im;
-				}
-			}		
-		//if phibin 1 > phibin 0, phibin 0 is a cluster all by itself--increment nclust and continue.
-			if(E1 > E2){
-				++nclust;
-				continue;
-			}
-		//get pT of third phibin-- does second belong to first?		
-			E0 = 0;  //E0 now for phibin 2.
-			for(int im = 0; L1clusters[2][im].pTtot != 0; ++im){
-				if(L1clusters[2][im].used == true) continue;
-				if(fabs(L1clusters[2][im].eta - L1clusters[2][imax].eta) < 1.5*etastep){
-					E0 += L1clusters[2][im].pTtot;
-				}
-			}		
-		   //if phibin 2 belongs to the cluster, add it.
-			if(E2 > E0) {
+		// if last <= phibin 0, cluster @ phibin 0, use last.
+			if(E0 <= E1) {
+				L2cluster[nclust] = L1clusters[nphibins-1][imax];
+				L2cluster[nclust].phi = L1clusters[0][used1].phi;
 				L2cluster[nclust].pTtot += E1;
 				L2cluster[nclust].numtracks += trx1;
-				if(used1 >= 0) L1clusters[1][used1].used = true;
-				if(used2 >= 0) L1clusters[1][used2].used = true;
+				L1clusters[0][used1].used = true;
+				if(used2 >= 0) L1clusters[0][used2].used = true;
 			}
-			++nclust;
-		} //end while true
-
-		//is there a cluster centered at phibin 1 that uses phibin 0?
-		while(true){
-			hipT = 0;
-			for(index1 = 0; L1clusters[0][index1].pTtot > 0; ++index1){
-				if(!pre_seen2[index1] && !L1clusters[0][index1].used && L1clusters[phibin][index1].pTtot >= hipT){
-					hipT = L1clusters[phibin][index1].pTtot;
-					imax = index1;
-				}
-			}//for each index within the phibin
-		      //If highest pT is 0, all bins are used.
-			if(hipT == 0){
-				break;
-			}
-			E0 = hipT;
-			E1 = 0;
-			E2 = 0;
-			trx1 = 0;
-			trx2 = 0;
-			used1 = -1;
-			used2 = -1;
-		  //find pT of phibin 1 (center of cluster?), store in E1.
+			used3 = -1;
+			used4 = -1;
+                //now get pT of phibin 1, store in E2.
 			for(int im = 0; L1clusters[1][im].pTtot != 0; ++im){
 				if(L1clusters[1][im].used == true) continue;
 				if(fabs(L1clusters[1][im].eta - L1clusters[1][imax].eta) < 1.5*etastep){
-					E1 += L1clusters[1][im].pTtot;
-					trx1 += L1clusters[1][im].numtracks;
-					if(used1 >= 0) used2 = im; else used1 = im;
-				}
-			}				
-		  //find pT of last phibin (just to see if phibin 0 belongs to me or him), store in E2.
-			for(int im = 0; L1clusters[nphibins-1][im].pTtot != 0; ++im){
-				if(L1clusters[nphibins-1][im].used == true) continue;
-				if(fabs(L1clusters[nphibins-1][im].eta - L1clusters[nphibins-1][imax].eta) < 1.5*etastep){
-					E2 += L1clusters[nphibins-1][im].pTtot;
-				}
-			}		
-			pre_seen2[imax] = true;
-		  //if last has higher pT than phibin 1 then phibin 0 doesn't belong to first.
-		  // so no need to worry about it now.  
-			if(E2 > E1 /*&& E1 <= E0*/) { //first > second and last <= first, so second not center of a cluster 
-				continue;
-			}
-		//evidently we have a cluster centered at phibin 1.
-		// does first belong to it? If not, we don't care about this cluster yet.
-	/*		if(E1 < E0){
-				continue;
-			} */
-			L2cluster[nclust] = L1clusters[0][imax];
-			L1clusters[0][imax].used = true;
-			//first_used[imax] = true;
-		//get pT of third  phibin
-		// if third > second then first is a cluster by itself, so increment nclust and continue
-		// otherwise add third to second's cluster.
-			E2 = 0; //now E2 will be pT of phibin 2 (third).
-			trx2 = 0;
-			used3, used4 = -1;
-			for(int im = 0; L1clusters[2][im].pTtot != 0; ++im){
-				if(L1clusters[2][im].used == true) continue;
-				if(fabs(L1clusters[2][im].eta - L1clusters[2][imax].eta) < 1.5*etastep){
-					E2 += L1clusters[2][im].pTtot;
-					trx2 += L1clusters[2][im].numtracks;
+					E2 += L1clusters[1][im].pTtot;
+					trx2 += L1clusters[1][im].numtracks;
 					if(used3 >= 0) used4 = im; else used3 = im;
 				}
-			}		
-			//E1 is still pT of phibin 1.
-			if(E1 < E2){
+			}
+		//if the cluster is centered at phibin 0, using last, just see if we should add E2 or nah.
+			if(E0 <= E1) {
+				if(E2 < E1) {
+					L2cluster[nclust].pTtot += E2;
+					L2cluster[nclust].numtracks += trx2;
+					L1clusters[1][used3].used = true;
+					if(used4 >= 0) L1clusters[1][used4].used = true;
+				}
 				++nclust;
 				continue;
 			}
-		    //evidently, phibin 0 belongs to phibin 1.
-			L2cluster[nclust].phi = L1clusters[1][0].phi;  //set phi to correct value.
-			L2cluster[nclust].pTtot += E1;
-			L2cluster[nclust].numtracks += trx1;
-			if(used1 >= 0) { 
-				L1clusters[1][used1].used = true;
-			}
-			if(used2 >= 0) {
-				L1clusters[1][used2].used = true;
-			}
-		//get pT of fourth phibin--does third belong to second?	
-			E0 = 0; //now E0 will be pT of fourth phibin.
-			for(int im = 0; L1clusters[3][im].pTtot != 0; ++im){
-				if(L1clusters[3][im].used == true) continue;
-				if(fabs(L1clusters[3][im].eta - L1clusters[3][imax].eta) < 1.5*etastep){
-					E0 += L1clusters[3][im].pTtot;
+	//if phibin 1 >= last phibin, there is a cluster centered either at phibin 0 or phibin 1 (but not using last)
+			if(E2 >= E0) {
+				int trx0 = 0;
+				int used5 = -1; int used6 = -1;
+                          //if phibin 0 > phibin 1, then phibin 0 is center of the cluster.
+				if(E1 > E2) {
+					L2cluster[nclust] = L1clusters[0][used1];
 				}
-			}		
-			if(E0 < E1) {
-				L2cluster[nclust].pTtot += E2;
-				L2cluster[nclust].numtracks += trx2;
-				if(used3 >= 0) L1clusters[1][used3].used = true;
+				else {
+					L2cluster[nclust] = L1clusters[1][used3];
+				    //get pT of second phibin, see if it should be added.
+				    //  now E0 will be for phibin 2.
+					E0 = 0;
+					for(int im = 0; L1clusters[2][im].pTtot != 0; ++im){
+						if(L1clusters[2][im].used == true) continue;
+						if(fabs(L1clusters[2][im].eta - L1clusters[2][imax].eta) < 1.5*etastep){
+							E2 += L1clusters[2][im].pTtot;
+							trx0 += L1clusters[2][im].numtracks;
+							if(used5 >= 0) used6 = im; else used5 = im;
+						}
+					}
+				//if we're not using phibin 2, set E0 and trx0 to 0.
+					if(E0 >= E1){
+						 E0 = 0;
+						 trx0 = 0;
+					}
+				}
+				L2cluster[nclust].eta = L1clusters[nphibins-1][imax].eta;
+				L2cluster[nclust].pTtot = E1 + E2 + E0; //E0 is only non-zero if phibin 1 < phibin 0.
+				L2cluster[nclust].numtracks = trx1 + trx2 + trx0;
+				L1clusters[0][used1].used = true;
+				if(used2 >= 0) L1clusters[0][used2].used = true;
+				L1clusters[1][used3].used = true;
 				if(used4 >= 0) L1clusters[1][used4].used = true;
+				if(used5 >= 0) L1clusters[2][used5].used = true;
+				if(used6 >= 0) L1clusters[2][used6].used = true;
+				++nclust;
 			}
-			++nclust;
-		} //end while true
+		}
+//**************************************************uhhhhhhhhhhhhhhhhhhhhhhhh**********************************************************************
+                	
 
 		/* Now finish clustering the rest of the phibins. */
 
