@@ -10,3 +10,5 @@ L1_cluster does phi-clustering in each etabin, and L2_cluster stitches everythin
 
 3/29/2018: Updated to do clustering first in eta (L1_cluster), then in phi (L2_cluster).
            This includes connecting first phibin to the last one. Possibly still some bugs (updates to come).
+     
+4/2/2018: Simplified algorithm to tie two sides of phi together (to reduce the logic in the firmware)
