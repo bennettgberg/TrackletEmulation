@@ -146,6 +146,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 				L2cluster[nclust].numtracks += trx1;
 				L1clusters[0][used1].used = true;
 				if(used2 >= 0) L1clusters[0][used2].used = true;
+				L1clusters[nphibins-1][imax].used = true;
 			}
 			used3 = -1;
 			used4 = -1;
@@ -208,7 +209,6 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 				++nclust;
 			}
 		}
-//**************************************************uhhhhhhhhhhhhhhhhhhhhhhhh**********************************************************************
                 	
 
 		/* Now finish clustering the rest of the phibins. */
