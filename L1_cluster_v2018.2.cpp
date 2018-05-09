@@ -70,7 +70,7 @@ etaphibin * L1_cluster(etaphibin * phislice){
 				m = -1;
 			}//end if clusters neighbor in eta
 		}//end for (m) loop
-
+//	for(int i = 0; i < nclust; ++i) cout << clusters[i].phi << "\t" << clusters[i].pTtot << "\t" << clusters[i].numtracks << endl;
 	//zero out remaining unused clusters.
 	for(int i = nclust; i < netabins/2; ++i){
 		clusters[i].pTtot = 0;
