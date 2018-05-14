@@ -174,7 +174,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 					if(E2 < E1){
 						L2cluster[nclust].pTtot += E1 + E2;
 						L2cluster[nclust].numtracks += trx1 + trx2;
-						L2cluster[nclust].eta = L1clusters[phibin+1][used1].eta;	
+						L2cluster[nclust].phi = L1clusters[phibin+1][used1].phi;	
 						if(used1 >= 0)
 							L1clusters[phibin+1][used1].used = true;
 						if(used2 >= 0)
@@ -190,7 +190,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 				else{
 					L2cluster[nclust].pTtot += E1;
 					L2cluster[nclust].numtracks += trx1;
-			//		L2cluster[nclust].eta = L1clusters[phibin+1][used1].eta;
+					L2cluster[nclust].phi = L1clusters[phibin+1][used1].phi;
 					if(used1 >= 0)
 						L1clusters[phibin+1][used1].used = true;
 					if(used2 >= 0)
