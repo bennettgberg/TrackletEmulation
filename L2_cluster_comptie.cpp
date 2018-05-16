@@ -145,6 +145,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 			if(E0 <= E1) {
 			//	L2cluster[nclust] = L1clusters[nphibins-1][imax];
 				L2cluster[nclust].phi = L1clusters[0][used1].phi;
+				L2cluster[nclust].eta = L1clusters[nphibins-1][imax].eta;
 				L2cluster[nclust].pTtot = E0+E1;
 				L2cluster[nclust].numtracks += trx1;
 				L1clusters[0][used1].used = true;
