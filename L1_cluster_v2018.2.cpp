@@ -13,6 +13,7 @@ etaphibin * L1_cluster(etaphibin * phislice){
 
 		for(int etabin = 0; etabin < netabins; ++etabin){
 			//assign values for my pT and neighbors' pT
+			if(phislice[etabin].used) continue;
 			my_pt = phislice[etabin].pTtot;
 			if(etabin > 0 && !phislice[etabin-1].used) {
 				left_pt = phislice[etabin-1].pTtot;
