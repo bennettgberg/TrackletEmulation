@@ -243,7 +243,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 		}
 	//	for(int db=0;db<nclust;++db)cout<<all_zbins[zbin].clusters[db].phi<<"\t"<<all_zbins[zbin].clusters[db].pTtot<<endl;	
 		all_zbins[zbin].ht = ht;
-		if(ht > mzb->ht){
+		if(ht >= mzb->ht){
 			mzb = &all_zbins[zbin];
 		}
 	       //Prepare for next zbin!

@@ -399,7 +399,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
 			all_zbins[zbin].clusters[k].numtracks = L2cluster[k].numtracks;
 		}
 		all_zbins[zbin].ht = ht;
-		if(ht > mzb->ht){
+		if(ht >= mzb->ht){
 			mzb = &all_zbins[zbin];
 		}
 	       //Prepare for next zbin!
