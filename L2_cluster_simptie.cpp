@@ -211,7 +211,7 @@ maxzbin * L2_cluster(track_data * tracks, mc_data * mcd, int nzbins, int ntracks
                      for(int n = m+1; n < nclust; ++n)
                         if(L2cluster[n].eta == L2cluster[m].eta && (fabs(L2cluster[n].phi - L2cluster[m].phi) < 1.5*phistep || fabs(L2cluster[n].phi - L2cluster[m].phi) > 6.0)){
                                 if(L2cluster[n].pTtot > L2cluster[m].pTtot){
-                                        L2cluster[m].eta = L2cluster[n].eta;
+                                        L2cluster[m].phi = L2cluster[n].phi;
                                 }
                                 L2cluster[m].pTtot += L2cluster[n].pTtot;
                                 L2cluster[m].numtracks += L2cluster[n].numtracks;
